@@ -6,13 +6,13 @@ import subprocess
 
 
 def threshold_func(doc):
+    cv2.imwrite('Input_file.png', doc)
     avg = np.mean(doc)
-    print(avg)
     if avg < 170:
         doc = 255 - doc
-    #threshold = cv2.threshold(doc, 205, 255, cv2.THRESH_BINARY)
-    #doc = threshold[1]
-    cv2.imwrite('Input.png', doc)
+    threshold = cv2.threshold(doc, 170, 255, cv2.THRESH_BINARY)
+    doc = threshold[1]
+    cv2.imwrite('img_processed.png', doc)
     return doc
 
 def main(doc):
@@ -58,15 +58,16 @@ def main(doc):
 
     result_img = np.stack((doc_black, doc_black, doc_black), axis=-1)
     result_img = result_img + zero_matrix
-    cv2.imwrite('Results.png', result_img)
-    with open('data.json', 'w') as f:
-        json.dump(result_cords, f)
-    subprocess.run(['python', 'char-reco.py'])  # calls another file
+    cv2.imwrite('Lines.png', result_img)
+    return result_cords
+
 
 img_input = argparse.ArgumentParser(description='Document Photo Input')
 img_input.add_argument('-i', type=str, required=True)
 args = img_input.parse_args()
-main(args.i)
-
+results = main(args.i)
+with open('data.json', 'w') as f:
+    json.dump(results, f)
+subprocess.run(['python', 'char-reco.py'])
 ## kelime bazlı çalışılacağından dolayı satırda anlamsız kelimelerin bulunmasının bir problem
 ## yaratmayacağını düşündüm o yüzden işaretlenen satırların arasında oluşan boşlukları silmeye uğraşmadım.
